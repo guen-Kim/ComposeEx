@@ -1,3 +1,9 @@
+Gnapse - figma
+https://www.figma.com/board/lC98MgMQOAiACzNsQTCay7/User-Flows---Stories--Community---%EB%B3%B5%EC%82%AC-?t=AZDVSMCn69x71Azk-1
+
+
+
+
 ✅ 지금까지 한 흐름
 단계	주제	완료 여부
 1주차	@Composable, Column, Row, Modifier, Text, Button	✅
@@ -5,4 +11,43 @@
 3주차	LazyColumn으로 리스트 만들기 + 체크 기능	✅
 💡 보충	mutableStateListOf + 리스트 항목의 상태 추적
 
+
+앞으로 ..
+📘 다음 학습 순서 (중급 진입)
+이제부터 화면 구조화 + 앱 다형성 쪽으로 들어갈 차례야:
+
+✅ 4단계: ➕ 항목 추가 기능
+TextField와 Button으로 새로운 할 일 입력
+
+리스트에 동적으로 추가
+
+상태를 리스트에 반영
+
+✅ 5단계: 🧠 ViewModel 도입
+상태를 Composable 내부가 아니라 ViewModel로 분리
+
+viewModel() 함수 사용법
+
+MVVM 구조 시작
+
+✅ 6단계: 🧭 Navigation (화면 전환)
+NavHost, NavController 사용
+
+목록 화면 → 상세 화면 이동
+
+파라미터 전달
+
+✅ 7단계: 🎨 MaterialTheme 커스터마이징
+앱 전체 테마 (색상, 폰트, 다크모드 대응 등)
+
+Material3 테마 구조 이해
+
+Typography, ColorScheme 설정
+
+✅ 8단계: 상태 고급편
+rememberSaveable – 화면 회전에도 상태 유지
+
+derivedStateOf – 파생 상태 만들기
+
+state hoisting – 상태를 외부로 끌어올려서 재사용 가능하게
 
