@@ -184,4 +184,12 @@ fun TodoListScreen() {
     }
 }
 
-
+/*
+* ✅ 지금까지 한 흐름
+단계	주제	완료 여부
+1주차	@Composable, Column, Row, Modifier, Text, Button	✅
+2주차	상태 관리(remember, mutableStateOf), 상호작용, Checkbox	✅
+3주차	LazyColumn으로 리스트 만들기 + 체크 기능	✅
+💡 보충	mutableStateListOf + 리스트 항목의 상태 추적
+*
+* */
