@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { // xml, inflate 코드
-            TodoListScreen()
+            TodoListScreenUpdate()
         }
     }
 }
@@ -184,12 +184,69 @@ fun TodoListScreen() {
     }
 }
 
-/*
-* ✅ 지금까지 한 흐름
-단계	주제	완료 여부
-1주차	@Composable, Column, Row, Modifier, Text, Button	✅
-2주차	상태 관리(remember, mutableStateOf), 상호작용, Checkbox	✅
-3주차	LazyColumn으로 리스트 만들기 + 체크 기능	✅
-💡 보충	mutableStateListOf + 리스트 항목의 상태 추적
-*
-* */
+
+@Composable
+fun TodoListScreenUpdate() {
+    val todos = remember {
+        mutableStateListOf(
+            TodoItem(1, "Compose 공부하기"),
+            TodoItem(2, "Compose 공부하기", mutableStateOf(true)),
+            TodoItem(3, "xml 공부하기"),
+        )
+    }
+
+    var newTodoText by remember { mutableStateOf(" ") }
+    var nextId by remember { mutableStateOf(4) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row( //행
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            TextField(
+                value = newTodoText,
+                onValueChange = { newTodoText = it },
+                modifier = Modifier.weight(1f),
+                label = { Text("할 일 입력") }
+            )
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(
+            onClick = {
+                if(newTodoText.isNotBlank()) {
+                    todos.add(
+                        TodoItem(id = nextId++, text = newTodoText)
+                    )
+                    newTodoText = ""
+                }
+            }
+        ) {
+            Text("추가")
+        }
+
+
+
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+    Text("Todo List", fontSize = 24.sp)
+
+    LazyColumn {
+        items(todos, key = { it.id }) {
+            todo ->
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clickable { todo.isDone.value = !todo.isDone.value }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(checked = todo.isDone.value, onCheckedChange = null)
+                Text(text = todo.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
+            }
+        }
+    }
+}
