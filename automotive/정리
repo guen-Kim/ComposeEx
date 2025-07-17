@@ -140,11 +140,12 @@ TextField(
 
 🎯 총점: 5점 / 10점
 
-
-
-
-
-
+📌 피드백 요약
+항목	평가
+개념 이해	👍 기본기는 탄탄함
+상태 관리	❗ 더 연습 필요 (.value, mutableStateListOf)
+ViewModel 연동	❗ 아직 불안정 (observable state vs 일반 리스트)
+용어 정확도	🔄 용어만 조금 다듬으면 완벽
 
 
 
