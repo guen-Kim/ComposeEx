@@ -13,13 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { // xml, inflate 코드
-            TodoListScreenUpdate()
+            TodoListScreenUpdateViewModel()
         }
     }
 }
@@ -136,7 +137,11 @@ fun SimpleCalculator() {
 
 //data class TodoItem(val id: Int, val text: String, var isDone: Boolean)
 //상태변화 감지를 위해 리컴포지션 발생 데이터 코드로 수정
-data class TodoItem(val id: Int, val text: String, val isDone: MutableState<Boolean> = mutableStateOf(false))
+data class TodoItem(
+    val id: Int,
+    val text: String,
+    val isDone: MutableState<Boolean> = mutableStateOf(false)
+)
 
 @Composable
 fun TodoListScreen() {
@@ -206,27 +211,26 @@ fun TodoListScreenUpdate() {
         Row( //행
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             TextField(
                 value = newTodoText,
                 onValueChange = { newTodoText = it },
                 modifier = Modifier.weight(1f),
                 label = { Text("할 일 입력") }
             )
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(
-            onClick = {
-                if(newTodoText.isNotBlank()) {
-                    todos.add(
-                        TodoItem(id = nextId++, text = newTodoText)
-                    )
-                    newTodoText = ""
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(
+                onClick = {
+                    if (newTodoText.isNotBlank()) {
+                        todos.add(
+                            TodoItem(id = nextId++, text = newTodoText)
+                        )
+                        newTodoText = ""
+                    }
                 }
+            ) {
+                Text("추가")
             }
-        ) {
-            Text("추가")
-        }
-
 
 
         }
@@ -235,8 +239,7 @@ fun TodoListScreenUpdate() {
     Text("Todo List", fontSize = 24.sp)
 
     LazyColumn {
-        items(todos, key = { it.id }) {
-            todo ->
+        items(todos, key = { it.id }) { todo ->
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -248,5 +251,54 @@ fun TodoListScreenUpdate() {
                 Text(text = todo.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
             }
         }
+    }
+}
+
+
+@Composable
+fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
+    val todos = viewModel.todos
+    val newTodoText by viewModel.newTodoText
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextField(
+                value = newTodoText,
+                onValueChange = { viewModel.onTextChange(it)},
+                modifier = Modifier.weight(1f),
+                label = {Text("할 일 입력")}
+                )
+
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {viewModel.addTodo()}) {
+                Text(text = "추가")
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("📝 Todo List", fontSize = 24.sp)
+
+        LazyColumn {
+            items(todos, key = {it.id}) { todo ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { viewModel.toggleTodo(todo) }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(checked = todo.isDone.value, onCheckedChange = null)
+                    Text(text = todo.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
+                }
+
+            }
+        }
+
     }
 }
