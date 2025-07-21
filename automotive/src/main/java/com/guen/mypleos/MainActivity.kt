@@ -145,51 +145,51 @@ data class TodoItem(
     val isDone: Boolean = false
 )
 
-@Composable
-fun TodoListScreen() {
-
-    var todos = remember {
-        mutableStateListOf(
-            TodoItem(1, "뇌전캐기", mutableStateOf(false)),
-            TodoItem(2, "일비캐기", mutableStateOf(false)),
-            TodoItem(3, "토비캐기", mutableStateOf(false))
-        )
-    }
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(text = "Todo List", fontSize = 26.sp)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        LazyColumn {
-            items(todos) { todo ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-                            todo.isDone.value = !todo.isDone.value
-                        }
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(
-                        checked = todo.isDone.value,
-                        onCheckedChange = null
-                    )
-                    Text(
-                        text = todo.text,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-            }
-        }
-    }
-}
+//@Composable
+//fun TodoListScreen() {
+//
+//    var todos = remember {
+//        mutableStateListOf(
+//            TodoItem(1, "뇌전캐기", mutableStateOf(false)),
+//            TodoItem(2, "일비캐기", mutableStateOf(false)),
+//            TodoItem(3, "토비캐기", mutableStateOf(false))
+//        )
+//    }
+//
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//    ) {
+//        Text(text = "Todo List", fontSize = 26.sp)
+//        Spacer(modifier = Modifier.height(16.dp))
+//
+//        LazyColumn {
+//            items(todos) { todo ->
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .clickable {
+//                            todo.isDone.value = !todo.isDone.value
+//                        }
+//                        .padding(vertical = 8.dp),
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Checkbox(
+//                        checked = todo.isDone.value,
+//                        onCheckedChange = null
+//                    )
+//                    Text(
+//                        text = todo.text,
+//                        fontSize = 18.sp,
+//                        modifier = Modifier.padding(start = 8.dp)
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
 
 
 @Composable
@@ -197,7 +197,7 @@ fun TodoListScreenUpdate() {
     val todos = remember {
         mutableStateListOf(
             TodoItem(1, "Compose 공부하기"),
-            TodoItem(2, "Compose 공부하기", mutableStateOf(true)),
+            TodoItem(2, "Compose 공부하기"),
             TodoItem(3, "xml 공부하기"),
         )
     }
