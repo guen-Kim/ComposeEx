@@ -51,6 +51,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.compose.material3)
 
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+
     // 옵션: 툴링 및 미리보기
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")

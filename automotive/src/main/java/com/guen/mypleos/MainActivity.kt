@@ -15,14 +15,18 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent { // xml, inflate 코드
-            TodoListScreenUpdateViewModel()
+            TodoApp()
         }
     }
 }
@@ -258,44 +262,44 @@ fun TodoListScreenUpdate() {
 
 
 //3. TodoScreen Composable – 상태는 ViewModel에서 가져오고, 입력값은 rememberSaveable로 관리
-@Composable
-fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
-    val todos = viewModel.todos
-    var input by rememberSaveable { mutableStateOf("") } // TextField 입력 필드 상태 유지
-
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = input,
-                onValueChange = { input = it},
-                modifier = Modifier.weight(1f),
-                label = {Text("할 일 입력")}
-                )
-
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {viewModel.addTodo(input)}) {
-                Text(text = "추가")
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("📝 Todo List", fontSize = 24.sp)
-
-        LazyColumn {
-            items(todos, key = {it.id}) { todo ->
-                TodoRow(todo = todo,
-                    onToggle = {viewModel.toggleTodo(todo.id)})
-            }
-        }
-    }
-}
+//@Composable
+//fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
+//    val todos = viewModel.todos
+//    var input by rememberSaveable { mutableStateOf("") } // TextField 입력 필드 상태 유지
+//
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//    ) {
+//        Row(
+//            modifier = Modifier.fillMaxSize(),
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            TextField(
+//                value = input,
+//                onValueChange = { input = it},
+//                modifier = Modifier.weight(1f),
+//                label = {Text("할 일 입력")}
+//                )
+//
+//            Spacer(modifier = Modifier.width(8.dp))
+//            Button(onClick = {viewModel.addTodo(input)}) {
+//                Text(text = "추가")
+//            }
+//        }
+//        Spacer(modifier = Modifier.height(16.dp))
+//        Text("📝 Todo List", fontSize = 24.sp)
+//
+//        LazyColumn {
+//            items(todos, key = {it.id}) { todo ->
+//                TodoRow(todo = todo,
+//                    onToggle = {viewModel.toggleTodo(todo.id)})
+//            }
+//        }
+//    }
+//}
 
 //4. TodoRow – State를 UI로 끌어오지 않고, 외부(onToggle)로 위임
 
@@ -306,25 +310,91 @@ fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
 * - onToggle: () -> Unit 의 비지니스 로직을 확장한다.
 * */
 @Composable
-fun TodoRow(todo: TodoItem, onToggle: () -> Unit) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .clickable { onToggle() }
-        .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically) {
-        Checkbox(checked = todo.isDone, onCheckedChange = {onToggle})
-        Text(text = todo.text,
+fun TodoRow(todo: TodoItem, onToggle: () -> Unit, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Checkbox(
+            checked = todo.isDone,
+            onCheckedChange = { onToggle() }
+        )
+        Text(
+            text = todo.text,
             modifier = Modifier.padding(start = 8.dp),
             fontSize = 18.sp
-            )
-
-
-
+        )
     }
+}
 
+@Composable
+fun TodoApp(viewModel: TodoViewModel = viewModel()) {
+    val navController = rememberNavController()
 
+    NavHost(navController = navController, startDestination = "list") {
+        composable("list") {
+            TodoListScreen(
+                viewModel = viewModel,
+                onTodoClick = { todoId ->
+                    navController.navigate("detail/$todoId")
+                }
+            )
+        }
+        composable("detail/{todoId}") { backStackEntry ->
+            val todoId = backStackEntry.arguments?.getString("todoId")?.toIntOrNull()
+            val todo = todoId?.let { id -> viewModel.todos.find { it.id == id } }
 
+            if (todo != null) {
+                TodoDetailScreen(
+                    todo = todo,
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                Text("Todo를 찾을 수 없습니다.")
+            }
+        }
+    }
+}
 
+@Composable
+fun TodoListScreen(
+    viewModel: TodoViewModel,
+    onTodoClick: (Int) -> Unit
+) {
+    val todos = viewModel.todos
 
+    LazyColumn(modifier = Modifier.padding(16.dp)) {
+        items(todos, key = { it.id }) { todo ->
+            TodoRow(
+                todo = todo,
+                onToggle = { viewModel.toggleDone(todo.id) },
+                onClick = { onTodoClick(todo.id) }
+            )
+        }
+    }
+}
 
+@Composable
+fun TodoDetailScreen(
+    todo: TodoItem,
+    onBack: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp)
+    ) {
+        Text("할 일 상세", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("ID: ${todo.id}")
+        Text("내용: ${todo.text}")
+        Text("완료 여부: ${if (todo.isDone) "완료" else "미완료"}")
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onBack) {
+            Text(text = "뒤로가기")
+        }
+    }
 }
