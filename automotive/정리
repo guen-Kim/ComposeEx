@@ -270,3 +270,6 @@ rememberSaveable	회전/복원에도 유지됨	입력값, 폼 등
 mutableStateOf	Compose 전용 상태	빠르게 UI만 바꿀 때
 StateFlow	Flow 기반 상태	비동기, 멀티 계층 필요 시
 
+
+Compose  state hoisting 과  - TextField
+https://kotlinworld.com/244

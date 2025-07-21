@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 
@@ -140,7 +142,7 @@ fun SimpleCalculator() {
 data class TodoItem(
     val id: Int,
     val text: String,
-    val isDone: MutableState<Boolean> = mutableStateOf(false)
+    val isDone: Boolean = false
 )
 
 @Composable
@@ -238,27 +240,29 @@ fun TodoListScreenUpdate() {
     Spacer(modifier = Modifier.height(16.dp))
     Text("Todo List", fontSize = 24.sp)
 
-    LazyColumn {
-        items(todos, key = { it.id }) { todo ->
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable { todo.isDone.value = !todo.isDone.value }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Checkbox(checked = todo.isDone.value, onCheckedChange = null)
-                Text(text = todo.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
-            }
-        }
-    }
+//    LazyColumn {
+//        items(todos, key = { it.id }) { todo ->
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .clickable { todo.isDone.value = !todo.isDone.value }
+//                    .padding(vertical = 8.dp),
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//                Checkbox(checked = todo.isDone.value, onCheckedChange = null)
+//                Text(text = todo.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
+//            }
+//        }
+//    }
 }
 
 
+//3. TodoScreen Composable – 상태는 ViewModel에서 가져오고, 입력값은 rememberSaveable로 관리
 @Composable
 fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
     val todos = viewModel.todos
-    val newTodoText by viewModel.newTodoText
+    var input by rememberSaveable { mutableStateOf("") } // TextField 입력 필드 상태 유지
+
 
     Column(
         modifier = Modifier
@@ -270,14 +274,14 @@ fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = newTodoText,
-                onValueChange = { viewModel.onTextChange(it)},
+                value = input,
+                onValueChange = { input = it},
                 modifier = Modifier.weight(1f),
                 label = {Text("할 일 입력")}
                 )
 
             Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {viewModel.addTodo()}) {
+            Button(onClick = {viewModel.addTodo(input)}) {
                 Text(text = "추가")
             }
         }
@@ -286,19 +290,41 @@ fun TodoListScreenUpdateViewModel(viewModel: TodoViewModel = viewModel()) {
 
         LazyColumn {
             items(todos, key = {it.id}) { todo ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewModel.toggleTodo(todo) }
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Checkbox(checked = todo.isDone.value, onCheckedChange = null)
-                    Text(text = todo.text, fontSize = 18.sp, modifier = Modifier.padding(start = 8.dp))
-                }
-
+                TodoRow(todo = todo,
+                    onToggle = {viewModel.toggleTodo(todo.id)})
             }
         }
+    }
+}
+
+//4. TodoRow – State를 UI로 끌어오지 않고, 외부(onToggle)로 위임
+
+/*
+* 장점:TodoRow를 입력 받아 사용하기 때문에 TodoListScreenUpdateViewModel의 LazyColumn를 재사용할 수 있다.
+* 단점:확장할 필요가 없다면 코드가 길어진다.
+* 확장
+* - onToggle: () -> Unit 의 비지니스 로직을 확장한다.
+* */
+@Composable
+fun TodoRow(todo: TodoItem, onToggle: () -> Unit) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .clickable { onToggle() }
+        .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(checked = todo.isDone, onCheckedChange = {onToggle})
+        Text(text = todo.text,
+            modifier = Modifier.padding(start = 8.dp),
+            fontSize = 18.sp
+            )
+
+
 
     }
+
+
+
+
+
+
 }
