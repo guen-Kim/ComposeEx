@@ -127,10 +127,10 @@ TextField(
 ✅ 정답 — items(list, key = { it.id }) {} 같이 key를 쓸 수 있음.
 점수: 1점
 
-9. ViewModel에서 상태 반영 안 되는 이유
+9. ViewModel에서 상태 반영 안 되는 이유*
 너의 답변: "모르겠음"
 ✅ 설명: mutableListOf()는 Compose가 감지 못함.
-→ mutableStateListOf() 또는 LiveData, StateFlow 같은 observable한 형태여야 함.
+→ mutableStateListOf() 또는 LiveData, StateFlow 같은 observable한 형태여야 함.**
 점수: 0점
 
 10. Compose + ViewModel 키워드 3개
@@ -148,5 +148,125 @@ ViewModel 연동	❗ 아직 불안정 (observable state vs 일반 리스트)
 용어 정확도	🔄 용어만 조금 다듬으면 완벽
 
 
+약점 - 상태(State) 관리
+✅ 1. remember vs rememberSaveable 차이
+🔹 remember
+컴포저블 함수 내에서만 동작하는 상태 저장
 
+화면을 다시 그릴 때(recomposition)는 값을 유지하지만
+화면 회전, 프로세스 종료 등에는 값이 유지되지 않음
+
+kotlin
+복사
+편집
+val text = remember { mutableStateOf("") }
+🔹 rememberSaveable
+내부적으로 SavedInstanceState를 사용해서
+화면 회전, 백그라운드 종료 후에도 값을 유지함
+
+자동으로 기본 타입(String, Int 등) 저장 가능
+
+kotlin
+복사
+편집
+val text = rememberSaveable { mutableStateOf("") }
+👉 Todo 작성 중이었는데 회전했더니 날아갔다? → rememberSaveable 써야 함!
+
+✅ 2. 상태 끌어올리기 (State Hoisting)
+"상태는 최대한 외부로 빼자!" — 재사용성, 테스트성, 유지보수 향상
+
+🔹 예전 방식 (내부에서 상태 관리)
+kotlin
+복사
+편집
+@Composable
+fun Counter() {
+    var count by remember { mutableStateOf(0) }
+
+    Button(onClick = { count++ }) {
+        Text("Count: $count")
+    }
+}
+🔹 상태 끌어올린 방식
+kotlin
+복사
+편집
+@Composable
+fun Counter(
+    count: Int,
+    onIncrement: () -> Unit
+) {
+    Button(onClick = onIncrement) {
+        Text("Count: $count")
+    }
+}
+kotlin
+복사
+편집
+@Composable
+fun CounterScreen() {
+    var count by remember { mutableStateOf(0) }
+
+    Counter(
+        count = count,
+        onIncrement = { count++ }
+    )
+}
+🧠 ViewModel에도 넘기기 쉬워지고, UI 컴포넌트는 Dumb해져서 더 깔끔해짐!
+
+✅ 3. ViewModel 상태 관리 – MutableState vs StateFlow
+🔹 MutableState
+Compose에 딱 맞는 상태
+
+Compose만 사용할 때 빠르게 UI 반영됨
+
+간단한 Todo 앱에는 충분함
+
+kotlin
+복사
+편집
+class MyViewModel : ViewModel() {
+    var text by mutableStateOf("")
+        private set
+
+    fun updateText(newText: String) {
+        text = newText
+    }
+}
+🔹 StateFlow
+Kotlin Flow 기반 상태 관리
+
+**Compose + 다른 계층(예: Repository, UseCase 등)**과 연동할 때 적합
+
+비동기 처리, 테스트, 확장성 면에서 유리
+
+UI에서는 .collectAsState()로 사용
+
+kotlin
+복사
+편집
+class MyViewModel : ViewModel() {
+    private val _text = MutableStateFlow("")
+    val text: StateFlow<String> = _text
+
+    fun updateText(newText: String) {
+        _text.value = newText
+    }
+}
+kotlin
+복사
+편집
+@Composable
+fun MyScreen(viewModel: MyViewModel = viewModel()) {
+    val text by viewModel.text.collectAsState()
+
+    Text(text = text)
+}
+💡 요약 정리
+구분	설명	추천 상황
+remember	간단한 상태 저장 (재조합에만 유지됨)	임시 상태
+rememberSaveable	회전/복원에도 유지됨	입력값, 폼 등
+상태 끌어올리기	UI는 Dumb, 상태는 외부	재사용성 ↑
+mutableStateOf	Compose 전용 상태	빠르게 UI만 바꿀 때
+StateFlow	Flow 기반 상태	비동기, 멀티 계층 필요 시
 
